@@ -107,7 +107,7 @@
 </main>
 
 <script id="route-data" type="application/json">
-  <%- JSON.stringify({ labels: hours, values: route.demand, id: route.id, axis: t('routes.detailDemand'), locale: ctx.tag }) %>
+  <%- JSON.stringify({ labels: hours, values: route.demand, id: route.id, axis: t('routes.detailDemand'), locale: ctx.intlTag }) %>
 </script>
 
 <%- include('../partials/footer', { pageScript: 'route-detail.js', pageChart: true }) %>

@@ -1,10 +1,15 @@
 {
   "name": "setpasto-plus",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Rediseño accesible y multilingüe del portal SETPasto — taller de contenido, voz e internacionalización",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node --watch server.js",
+    "start": "node server.js",
+    "build": "npm run vendor && npm run css:build",
+    "css:build": "tailwindcss -i ./src/css/input.css -o ./public/css/app.css --minify",
+    "css:watch": "tailwindcss -i ./src/css/input.css -o ./public/css/app.css --watch",
+    "vendor": "node scripts/copy-vendor.js"
   },
   "keywords": [],
   "author": "",
@@ -22,5 +27,9 @@
     "chart.js": "^4.5.1",
     "postcss": "^8.5.26",
     "tailwindcss": "^3.4.19"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=18"
   }
 }

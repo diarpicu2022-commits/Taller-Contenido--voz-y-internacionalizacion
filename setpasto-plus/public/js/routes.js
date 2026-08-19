@@ -7,7 +7,7 @@
   var form = document.querySelector('[data-route-filters]');
   if (!form) return;
 
-  var locale = document.documentElement.getAttribute('lang') || 'es-CO';
+  var locale = document.documentElement.getAttribute('data-intl-locale') || 'es-CO';
   var nf = new Intl.NumberFormat(locale);
   var pr = new Intl.PluralRules(locale);
 

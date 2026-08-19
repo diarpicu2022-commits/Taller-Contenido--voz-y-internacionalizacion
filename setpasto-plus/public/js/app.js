@@ -6,7 +6,8 @@
   'use strict';
 
   var root = document.documentElement;
-  var LOCALE = root.getAttribute('lang') || 'es-CO';
+  // El tag de formato puede diferir del de idioma (p. ej. ar-u-nu-arab).
+  var LOCALE = root.getAttribute('data-intl-locale') || root.getAttribute('lang') || 'es-CO';
 
   /** ¿El usuario pidió menos movimiento, por sistema o por nuestro panel? */
   function reducedMotion() {
@@ -79,6 +80,15 @@
     }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
 
     revealables.forEach(function (el) { io.observe(el); });
+
+    // Red de seguridad: si algo impide que el observador dispare (una pestaña
+    // en segundo plano, un navegador que no repinta), el contenido aparece
+    // igualmente. Nada debe quedarse invisible por culpa de una animación.
+    setTimeout(function () {
+      revealables.forEach(function (el) {
+        if (getComputedStyle(el).opacity === '0') el.style.opacity = '1';
+      });
+    }, 3000);
   }
 
   /* ------------------------ contadores animados -------------------------- */

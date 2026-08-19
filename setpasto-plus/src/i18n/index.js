@@ -7,15 +7,19 @@ const path = require('path');
  * Registro de locales
  * ---------------------------------------------------------------------------
  * El prefijo de URL (`es`, `en`, `pt`, `ar`) es corto y estable; el tag BCP-47
- * completo (`es-CO`, `pt-BR`, …) es el que se declara en <html lang> y el que
- * consume la API Intl. Separar ambos evita el error del sitio original, que
- * declaraba `es-ES` para un público colombiano.
+ * completo (`es-CO`, `pt-BR`, …) es el que se declara en <html lang>. El tag
+ * de formato (`intl`) puede llevar extensiones que no pertenecen a la
+ * identidad lingüística, como el sistema de numeración. Separarlos evita el
+ * error del sitio original, que declaraba `es-ES` para un público colombiano.
  * ------------------------------------------------------------------------- */
 const LOCALES = [
-  { prefix: 'es', tag: 'es-CO', file: 'es-CO.json' },
-  { prefix: 'en', tag: 'en-US', file: 'en-US.json' },
-  { prefix: 'pt', tag: 'pt-BR', file: 'pt-BR.json' },
-  { prefix: 'ar', tag: 'ar',    file: 'ar.json'    },
+  { prefix: 'es', tag: 'es-CO', intl: 'es-CO',        file: 'es-CO.json' },
+  { prefix: 'en', tag: 'en-US', intl: 'en-US',        file: 'en-US.json' },
+  { prefix: 'pt', tag: 'pt-BR', intl: 'pt-BR',        file: 'pt-BR.json' },
+  // El subtag de extensión -u-nu-arab pide a Intl los dígitos indoarábigos orientales
+  // (٠١٢٣). Va solo en el tag de formato: <html lang> conserva `ar`, porque
+  // el sistema de numeración no es parte de la identidad lingüística.
+  { prefix: 'ar', tag: 'ar',    intl: 'ar-u-nu-arab', file: 'ar.json'    },
 ];
 
 const DEFAULT_PREFIX = 'es';
@@ -81,23 +85,24 @@ function createContext(prefix) {
   const meta = byPrefix.get(prefix) || byPrefix.get(DEFAULT_PREFIX);
   const dict = dictionaries.get(meta.prefix);
   const tag = meta.tag;
+  const intlTag = meta.intl || meta.tag;
 
   const fmt = {
-    dateLong: new Intl.DateTimeFormat(tag, { dateStyle: 'long' }),
-    dateFull: new Intl.DateTimeFormat(tag, { dateStyle: 'full' }),
-    dateShort: new Intl.DateTimeFormat(tag, { dateStyle: 'medium' }),
-    time: new Intl.DateTimeFormat(tag, { timeStyle: 'short' }),
-    number: new Intl.NumberFormat(tag),
-    compact: new Intl.NumberFormat(tag, { notation: 'compact', maximumFractionDigits: 1 }),
-    percent: new Intl.NumberFormat(tag, { style: 'percent', maximumFractionDigits: 1 }),
-    currency: new Intl.NumberFormat(tag, {
+    dateLong: new Intl.DateTimeFormat(intlTag, { dateStyle: 'long' }),
+    dateFull: new Intl.DateTimeFormat(intlTag, { dateStyle: 'full' }),
+    dateShort: new Intl.DateTimeFormat(intlTag, { dateStyle: 'medium' }),
+    time: new Intl.DateTimeFormat(intlTag, { timeStyle: 'short' }),
+    number: new Intl.NumberFormat(intlTag),
+    compact: new Intl.NumberFormat(intlTag, { notation: 'compact', maximumFractionDigits: 1 }),
+    percent: new Intl.NumberFormat(intlTag, { style: 'percent', maximumFractionDigits: 1 }),
+    currency: new Intl.NumberFormat(intlTag, {
       style: 'currency',
       currency: dict.currency || 'COP',
       maximumFractionDigits: 0,
     }),
-    relative: new Intl.RelativeTimeFormat(tag, { numeric: 'auto' }),
-    list: new Intl.ListFormat(tag, { style: 'long', type: 'conjunction' }),
-    plural: new Intl.PluralRules(tag),
+    relative: new Intl.RelativeTimeFormat(intlTag, { numeric: 'auto' }),
+    list: new Intl.ListFormat(intlTag, { style: 'long', type: 'conjunction' }),
+    plural: new Intl.PluralRules(intlTag),
   };
 
   /** Traduce una clave; devuelve la clave misma si falta (visible en QA). */
@@ -132,6 +137,7 @@ function createContext(prefix) {
   return {
     prefix: meta.prefix,
     tag,
+    intlTag,
     dir: dict.dir,
     dict,
     t,
@@ -141,6 +147,7 @@ function createContext(prefix) {
     locales: LOCALES.map((l) => ({
       prefix: l.prefix,
       tag: l.tag,
+      intl: l.intl || l.tag,
       nativeName: dictionaries.get(l.prefix).nativeName,
       shortName: dictionaries.get(l.prefix).shortName,
       dir: dictionaries.get(l.prefix).dir,

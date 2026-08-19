@@ -42,6 +42,13 @@
   }
 
   html { scroll-behavior: smooth; }
+  /* Interruptor «reducir animaciones» del panel de accesibilidad: hace lo
+     mismo que la preferencia del sistema, pero a petición explícita. */
+  .a11y-motion, .a11y-motion * {
+    animation: none !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     *, *::before, *::after {
