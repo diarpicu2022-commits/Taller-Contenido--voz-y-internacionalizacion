@@ -1,0 +1,19 @@
+<%# Curvas de nivel: el Galeras dibujado como señalética. Es decorativo, por eso
+    va oculto para lectores de pantalla. %>
+<svg class="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 1200 620">
+  <defs>
+    <linearGradient id="topoFade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="var(--brand)" stop-opacity=".30"/>
+      <stop offset="70%" stop-color="var(--brand)" stop-opacity=".05"/>
+      <stop offset="100%" stop-color="var(--brand)" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" stroke="url(#topoFade)" stroke-width="1.25">
+    <% for (let i = 0; i < 14; i++) {
+         const y = 120 + i * 34;
+         const amp = 58 - i * 3;
+         const d = `M-40 ${y} C 180 ${y - amp}, 340 ${y + amp * .7}, 560 ${y - amp * .5} S 940 ${y + amp}, 1240 ${y - amp * .3}`; %>
+      <path d="<%= d %>" style="opacity: <%= (1 - i / 18).toFixed(2) %>"></path>
+    <% } %>
+  </g>
+</svg>

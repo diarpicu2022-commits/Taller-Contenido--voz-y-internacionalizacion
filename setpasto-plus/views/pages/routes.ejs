@@ -1,0 +1,125 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+
+<main id="main">
+  <section class="relative overflow-hidden border-b" style="border-color: var(--line)">
+    <%- include('../partials/topo') %>
+    <div class="relative mx-auto max-w-[1400px] px-4 py-14 sm:px-6 lg:py-20">
+      <p class="eyebrow flex items-center gap-3"><span class="inline-block h-px w-8" style="background: var(--accent)"></span><%= t('nav.rutas') %></p>
+      <h1 class="mt-4 max-w-3xl font-display text-[clamp(2.2rem,5.5vw,3.6rem)] font-extrabold leading-[1] tracking-[-0.03em] text-balance"><%= t('routes.title') %></h1>
+      <p class="mt-5 max-w-2xl text-lg leading-relaxed text-pretty" style="color: var(--text-soft)"><%= t('routes.lead') %></p>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-[1400px] px-4 py-10 sm:px-6 lg:py-14">
+
+    <!-- Filtros. Sin JavaScript la lista se muestra completa; con JavaScript
+         se filtra en vivo y se anuncia el resultado en una región aria-live. -->
+    <form class="grid grid-cols-12 items-end gap-4" data-route-filters onsubmit="return false">
+      <div class="col-span-12 md:col-span-5">
+        <label for="rq" class="mb-2 block text-sm font-semibold"><%= t('routes.searchLabel') %></label>
+        <input id="rq" type="search" value="<%= prefill %>" placeholder="<%= t('routes.searchPlaceholder') %>"
+               class="w-full rounded-xl border px-4 py-3 text-base outline-none placeholder:opacity-60"
+               style="background: var(--surface-raised); border-color: var(--line); color: var(--text)">
+      </div>
+
+      <fieldset class="col-span-12 md:col-span-4">
+        <legend class="mb-2 block text-sm font-semibold"><%= t('routes.filterFamily') %></legend>
+        <div class="flex flex-wrap gap-2" role="radiogroup">
+          <% [['all', t('routes.familyAll')], ['C', t('routes.familyC')], ['E', t('routes.familyE')]].forEach(function (opt, i) { %>
+            <label class="cursor-pointer">
+              <input type="radio" name="fam" value="<%= opt[0] %>" class="peer sr-only" <%= i === 0 ? 'checked' : '' %>>
+              <span class="inline-block rounded-full border px-4 py-2 text-sm transition-colors peer-checked:border-transparent peer-checked:font-semibold peer-checked:text-white peer-focus-visible:outline peer-focus-visible:outline-2"
+                    style="border-color: var(--line)"
+                    data-checked-bg><%= opt[1] %></span>
+            </label>
+          <% }); %>
+        </div>
+      </fieldset>
+
+      <div class="col-span-12 md:col-span-3">
+        <label class="flex items-start gap-3 text-sm">
+          <input type="checkbox" name="access" class="mt-0.5 h-5 w-5 shrink-0 rounded accent-[var(--brand)]">
+          <span><%= t('routes.filterAccess') %></span>
+        </label>
+      </div>
+    </form>
+
+    <p class="mt-6 font-mono text-sm" style="color: var(--text-mute)" data-route-count role="status" aria-live="polite"
+       data-tpl-one="<%= t('routes.resultOne') %>"
+       data-tpl-other="<%= t('routes.resultOther') %>">
+      <%= plural('routes.result', routes.length) %>
+    </p>
+
+    <!-- Tabla en pantallas anchas -->
+    <div class="mt-4 hidden overflow-x-auto rounded-2xl border md:block" style="border-color: var(--line)">
+      <table class="w-full min-w-[720px] border-collapse text-sm">
+        <caption class="sr-only"><%= t('routes.title') %></caption>
+        <thead>
+          <tr style="background: var(--surface-sunk)">
+            <th scope="col" class="p-4 text-start font-semibold"><%= t('routes.colRoute') %></th>
+            <th scope="col" class="p-4 text-start font-semibold"><%= t('routes.colCorridor') %></th>
+            <th scope="col" class="p-4 text-start font-semibold"><%= t('routes.colFrequency') %></th>
+            <th scope="col" class="p-4 text-start font-semibold"><%= t('routes.colSpan') %></th>
+            <th scope="col" class="p-4 text-start font-semibold"><%= t('routes.colAccess') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% routes.forEach(function (r) { %>
+            <tr class="border-t transition-colors hover:bg-[color-mix(in_oklab,var(--brand)_6%,transparent)]"
+                style="border-color: var(--line)"
+                data-route
+                data-id="<%= r.id %>"
+                data-fam="<%= r.id[0] %>"
+                data-access="<%= r.low ? '1' : '0' %>"
+                data-search="<%= (r.id + ' ' + r.from + ' ' + r.to).toLowerCase() %>">
+              <td class="p-4">
+                <a href="<%= href('/rutas/' + r.id) %>" class="badge-ruta no-underline" data-fam="<%= r.id[0] %>"><%= r.id %></a>
+              </td>
+              <td class="p-4">
+                <a href="<%= href('/rutas/' + r.id) %>" class="link-underline font-medium" style="color: var(--text)"><%= r.from %> — <%= r.to %></a>
+              </td>
+              <td class="p-4 font-mono" style="color: var(--text-soft)"><%= t('routes.frequencyValue', { n: r.headway }) %></td>
+              <td class="p-4 font-mono" style="color: var(--text-soft)" dir="ltr"><%= r.spanFrom %> – <%= r.spanTo %></td>
+              <td class="p-4">
+                <% if (r.low) { %>
+                  <span class="inline-flex items-center gap-1.5 text-xs font-medium" style="color: var(--cat-1)">
+                    <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" aria-hidden="true"><path d="m5 13 4 4 10-10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <%= t('routes.accessible') %>
+                  </span>
+                <% } else { %>
+                  <span class="text-xs" style="color: var(--text-mute)"><%= t('routes.notAccessible') %></span>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tarjetas en móvil -->
+    <ul class="mt-4 grid gap-3 sm:grid-cols-2 md:hidden">
+      <% routes.forEach(function (r) { %>
+        <li data-route-card
+            data-id="<%= r.id %>" data-fam="<%= r.id[0] %>" data-access="<%= r.low ? '1' : '0' %>"
+            data-search="<%= (r.id + ' ' + r.from + ' ' + r.to).toLowerCase() %>">
+          <a href="<%= href('/rutas/' + r.id) %>" class="card card-hover flex h-full flex-col gap-2 p-4 no-underline">
+            <span class="badge-ruta self-start" data-fam="<%= r.id[0] %>"><%= r.id %></span>
+            <span class="text-sm font-semibold"><%= r.from %> — <%= r.to %></span>
+            <span class="font-mono text-[11px]" style="color: var(--text-mute)">
+              <%= t('routes.frequencyValue', { n: r.headway }) %> · <span dir="ltr"><%= r.spanFrom %>–<%= r.spanTo %></span>
+            </span>
+          </a>
+        </li>
+      <% }); %>
+    </ul>
+
+    <p class="mt-8 hidden rounded-2xl border p-8 text-center" style="border-color: var(--line)" data-route-empty
+       data-tpl-empty="<%= t('common.noResults') %>">
+      <span class="block font-display text-xl font-bold" data-empty-title></span>
+      <span class="mt-2 block text-sm" style="color: var(--text-soft)"><%= t('common.noResultsHint') %></span>
+    </p>
+  </section>
+</main>
+
+<%- include('../partials/footer', { pageScript: 'routes.js' }) %>

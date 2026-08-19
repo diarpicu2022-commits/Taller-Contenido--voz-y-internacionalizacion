@@ -1,0 +1,184 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+
+<main id="main">
+  <section class="relative overflow-hidden border-b" style="border-color: var(--line)">
+    <%- include('../partials/topo') %>
+    <div class="relative mx-auto max-w-[1400px] px-4 py-14 sm:px-6 lg:py-20">
+      <p class="eyebrow flex items-center gap-3"><span class="inline-block h-px w-8" style="background: var(--accent)"></span>PQRSD</p>
+      <h1 class="mt-4 max-w-3xl font-display text-[clamp(2.2rem,5.5vw,3.6rem)] font-extrabold leading-[1] tracking-[-0.03em] text-balance"><%= t('pqrs.title') %></h1>
+      <p class="mt-5 max-w-2xl text-lg leading-relaxed text-pretty" style="color: var(--text-soft)"><%= t('pqrs.lead') %></p>
+    </div>
+  </section>
+
+  <section class="mx-auto grid max-w-[1400px] grid-cols-12 gap-6 px-4 py-12 sm:px-6 lg:gap-10 lg:py-16">
+
+    <div class="col-span-12 lg:col-span-7 xl:col-span-8">
+
+      <% if (submitted) { %>
+        <div class="card border-2 p-8" style="border-color: var(--brand)" role="status">
+          <div class="flex items-start gap-4">
+            <span class="grid h-12 w-12 shrink-0 place-items-center rounded-full" style="background: color-mix(in oklab, var(--brand) 18%, transparent)">
+              <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" style="color: var(--brand)" aria-hidden="true"><path d="m5 13 4 4 10-10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <div>
+              <h2 class="font-display text-2xl font-extrabold tracking-tight"><%= t('pqrs.successTitle') %></h2>
+              <p class="mt-3 leading-relaxed" style="color: var(--text-soft)">
+                <%= t('pqrs.successText', { id: submitted.id, email: submitted.email, date: submitted.date }) %>
+              </p>
+              <a href="<%= href('/') %>" class="btn btn-ghost mt-6 no-underline"><%= t('nav.home') %></a>
+            </div>
+          </div>
+        </div>
+      <% } else { %>
+
+        <% const errorKeys = Object.keys(errors); %>
+        <% if (errorKeys.length) { %>
+          <div class="card mb-8 border-2 p-6" style="border-color: var(--cat-4)" role="alert" tabindex="-1" id="error-summary">
+            <h2 class="font-display text-lg font-bold" style="color: var(--cat-4)">
+              <%= plural('pqrs.errSummary', errorKeys.length) %>
+            </h2>
+            <ul class="mt-3 space-y-1 text-sm">
+              <% errorKeys.forEach(function (k) { %>
+                <li><a class="link-underline" href="#f-<%= k %>" style="color: var(--text-soft)"><%= errors[k] %></a></li>
+              <% }); %>
+            </ul>
+          </div>
+        <% } %>
+
+        <form method="post" action="<%= href('/pqrs') %>" novalidate class="grid gap-8" data-pqrs-form>
+
+          <fieldset>
+            <legend class="font-display text-lg font-bold"><%= t('pqrs.typeLabel') %></legend>
+            <div class="mt-4 grid gap-3 sm:grid-cols-2">
+              <% t('pqrs.types').forEach(function (type, i) { %>
+                <label class="cursor-pointer">
+                  <input type="radio" name="tipo" value="<%= type.value %>" class="peer sr-only"
+                         <%= (values.tipo || 'peticion') === type.value ? 'checked' : '' %>>
+                  <span class="block h-full rounded-xl border p-4 transition-colors peer-checked:border-2 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2"
+                        style="border-color: var(--line)">
+                    <span class="block font-semibold"><%= type.label %></span>
+                    <span class="mt-1 block text-sm" style="color: var(--text-mute)"><%= type.hint %></span>
+                  </span>
+                </label>
+              <% }); %>
+            </div>
+          </fieldset>
+
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label for="f-nombre" class="mb-2 flex items-center gap-2 text-sm font-semibold">
+                <%= t('pqrs.nameLabel') %>
+                <span class="font-mono text-[10px] uppercase tracking-widest" style="color: var(--text-mute)"><%= t('common.required') %></span>
+              </label>
+              <input id="f-nombre" name="nombre" type="text" required autocomplete="name"
+                     value="<%= values.nombre || '' %>"
+                     placeholder="<%= t('pqrs.namePlaceholder') %>"
+                     class="w-full rounded-xl border px-4 py-3 outline-none placeholder:opacity-60"
+                     style="background: var(--surface-raised); border-color: <%= errors.nombre ? 'var(--cat-4)' : 'var(--line)' %>; color: var(--text)"
+                     <%= errors.nombre ? 'aria-invalid="true" aria-describedby="e-nombre"' : '' %>>
+              <% if (errors.nombre) { %><p id="e-nombre" class="mt-2 text-sm" style="color: var(--cat-4)"><%= errors.nombre %></p><% } %>
+            </div>
+
+            <div>
+              <label for="f-email" class="mb-2 flex items-center gap-2 text-sm font-semibold">
+                <%= t('pqrs.emailLabel') %>
+                <span class="font-mono text-[10px] uppercase tracking-widest" style="color: var(--text-mute)"><%= t('common.required') %></span>
+              </label>
+              <input id="f-email" name="email" type="email" required autocomplete="email" dir="ltr"
+                     value="<%= values.email || '' %>"
+                     placeholder="<%= t('pqrs.emailPlaceholder') %>"
+                     class="w-full rounded-xl border px-4 py-3 outline-none placeholder:opacity-60"
+                     style="background: var(--surface-raised); border-color: <%= errors.email ? 'var(--cat-4)' : 'var(--line)' %>; color: var(--text)"
+                     aria-describedby="<%= errors.email ? 'e-email' : 'h-email' %>">
+              <% if (errors.email) { %>
+                <p id="e-email" class="mt-2 text-sm" style="color: var(--cat-4)"><%= errors.email %></p>
+              <% } else { %>
+                <p id="h-email" class="mt-2 text-xs" style="color: var(--text-mute)"><%= t('pqrs.emailHint') %></p>
+              <% } %>
+            </div>
+          </div>
+
+          <div>
+            <label for="f-ruta" class="mb-2 block text-sm font-semibold">
+              <%= t('pqrs.routeLabel') %>
+              <span class="ms-2 font-mono text-[10px] uppercase tracking-widest" style="color: var(--text-mute)"><%= t('common.optional') %></span>
+            </label>
+            <select id="f-ruta" name="ruta" class="w-full rounded-xl border px-4 py-3 outline-none"
+                    style="background: var(--surface-raised); border-color: var(--line); color: var(--text)">
+              <option value=""><%= t('pqrs.routeNone') %></option>
+              <% routes.forEach(function (r) { %>
+                <option value="<%= r.id %>" <%= values.ruta === r.id ? 'selected' : '' %>><%= r.id %> · <%= r.from %> — <%= r.to %></option>
+              <% }); %>
+            </select>
+          </div>
+
+          <div>
+            <label for="f-mensaje" class="mb-2 flex items-center gap-2 text-sm font-semibold">
+              <%= t('pqrs.messageLabel') %>
+              <span class="font-mono text-[10px] uppercase tracking-widest" style="color: var(--text-mute)"><%= t('common.required') %></span>
+            </label>
+            <textarea id="f-mensaje" name="mensaje" rows="6" required maxlength="1200"
+                      placeholder="<%= t('pqrs.messagePlaceholder') %>"
+                      class="w-full rounded-xl border px-4 py-3 outline-none placeholder:opacity-60"
+                      style="background: var(--surface-raised); border-color: <%= errors.mensaje ? 'var(--cat-4)' : 'var(--line)' %>; color: var(--text)"
+                      data-counter-target="msg-count"
+                      <%= errors.mensaje ? 'aria-invalid="true" aria-describedby="e-mensaje msg-count"' : 'aria-describedby="msg-count"' %>><%= values.mensaje || '' %></textarea>
+            <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
+              <% if (errors.mensaje) { %><p id="e-mensaje" class="text-sm" style="color: var(--cat-4)"><%= errors.mensaje %></p><% } else { %><span></span><% } %>
+              <p id="msg-count" class="font-mono text-xs" style="color: var(--text-mute)"
+                 data-counter-template="<%= t('pqrs.messageCounter', { n: '__n__', max: 1200 }) %>">
+                <%= t('pqrs.messageCounter', { n: fmt.number.format((values.mensaje || '').length), max: fmt.number.format(1200) }) %>
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <label class="flex items-start gap-3 text-sm">
+              <input type="checkbox" name="consent" class="mt-0.5 h-5 w-5 shrink-0 rounded accent-[var(--brand)]"
+                     <%= values.consent ? 'checked' : '' %>
+                     <%= errors.consent ? 'aria-invalid="true" aria-describedby="e-consent"' : '' %> id="f-consent">
+              <span style="color: var(--text-soft)"><%= t('pqrs.consentLabel') %></span>
+            </label>
+            <% if (errors.consent) { %><p id="e-consent" class="mt-2 text-sm" style="color: var(--cat-4)"><%= errors.consent %></p><% } %>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-4">
+            <button type="submit" class="btn btn-primary px-6 py-3 text-base"><%= t('pqrs.submit') %></button>
+            <p class="text-xs" style="color: var(--text-mute)"><%= t('pqrs.sla') %>: <strong><%= t('pqrs.slaValue') %></strong></p>
+          </div>
+        </form>
+      <% } %>
+    </div>
+
+    <aside class="col-span-12 lg:col-span-5 xl:col-span-4">
+      <div class="card sticky top-28 p-6">
+        <h2 class="font-display text-lg font-bold"><%= t('pqrs.channels') %></h2>
+        <dl class="mt-5 space-y-5 text-sm">
+          <div>
+            <dt class="eyebrow"><%= t('pqrs.phone') %></dt>
+            <dd class="mt-1"><a class="link-underline font-mono" href="tel:+576027314912" dir="ltr">+57 602 731 4912</a></dd>
+          </div>
+          <div>
+            <dt class="eyebrow"><%= t('footer.contactTitle') %></dt>
+            <dd class="mt-1"><a class="link-underline" href="mailto:comunicaciones@avante.gov.co" dir="ltr">comunicaciones@avante.gov.co</a></dd>
+          </div>
+          <div>
+            <dt class="eyebrow"><%= t('pqrs.office') %></dt>
+            <dd class="mt-1" style="color: var(--text-soft)"><%= t('footer.address') %></dd>
+          </div>
+          <div>
+            <dt class="eyebrow"><%= t('footer.hoursTitle') %></dt>
+            <dd class="mt-1" style="color: var(--text-soft)"><%= t('footer.hours') %></dd>
+          </div>
+          <div class="rounded-xl p-4" style="background: color-mix(in oklab, var(--accent) 12%, transparent)">
+            <dt class="eyebrow" style="color: var(--accent)"><%= t('pqrs.sla') %></dt>
+            <dd class="mt-1 font-display text-xl font-extrabold"><%= t('pqrs.slaValue') %></dd>
+          </div>
+        </dl>
+      </div>
+    </aside>
+  </section>
+</main>
+
+<%- include('../partials/footer', { pageScript: 'pqrs.js' }) %>

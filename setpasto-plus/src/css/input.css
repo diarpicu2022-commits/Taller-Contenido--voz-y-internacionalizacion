@@ -1,0 +1,157 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------
+   SETPasto+ · capa base
+   Tokens semánticos en CSS custom properties para que el tema
+   claro/oscuro y los charts compartan una sola fuente de verdad.
+----------------------------------------------------------------*/
+@layer base {
+  :root {
+    --surface:        #F7F4ED;
+    --surface-raised: #FFFDF8;
+    --surface-sunk:   #EFEADF;
+    --text:           #101A18;
+    --text-soft:      #3C4A47;
+    --text-mute:      #6B7976;
+    --line:           rgba(16,26,24,.12);
+    --brand:          #0A6B58;
+    --brand-ink:      #05302A;
+    --accent:         #D96A0B;
+    /* paleta categórica validada (modo claro) */
+    --cat-1: #0A8F73; --cat-2: #D96A0B; --cat-3: #2C74D6;
+    --cat-4: #C13A6E; --cat-5: #7A5AD6; --cat-6: #12A2C4;
+    --grid-line: rgba(16,26,24,.10);
+  }
+  .dark {
+    --surface:        #0E1614;
+    --surface-raised: #161F1D;
+    --surface-sunk:   #0A100F;
+    --text:           #EDEAE1;
+    --text-soft:      #B6C1BE;
+    --text-mute:      #8A9793;
+    --line:           rgba(237,234,225,.14);
+    --brand:          #2FB79A;
+    --brand-ink:      #C4E8DF;
+    --accent:         #F0A040;
+    /* paleta categórica validada (modo oscuro) */
+    --cat-1: #1FA98B; --cat-2: #CE7C10; --cat-3: #4A93EC;
+    --cat-4: #DC4B7E; --cat-5: #9370EE; --cat-6: #0F9FC2;
+    --grid-line: rgba(237,234,225,.10);
+  }
+
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: .001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .001ms !important;
+    }
+  }
+
+  body {
+    background-color: var(--surface);
+    color: var(--text);
+    font-feature-settings: "ss01", "cv05";
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Tipografía árabe: el cuerpo cambia de familia cuando dir=rtl */
+  [dir="rtl"] body { font-family: "IBM Plex Sans Arabic", "Instrument Sans", system-ui, sans-serif; }
+  [dir="rtl"] .font-display { font-family: "IBM Plex Sans Arabic", "Bricolage Grotesque", serif; letter-spacing: 0; }
+  [dir="rtl"] .font-mono { font-feature-settings: normal; }
+
+  /* Foco visible y consistente en todo el sitio (WCAG 2.4.7) */
+  :focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  ::selection { background: var(--brand); color: #fff; }
+
+  /* Modo de alto contraste opcional del panel de accesibilidad */
+  .a11y-contrast { --line: currentColor; }
+  .a11y-contrast :where(a, button) { text-decoration-thickness: 2px; }
+  .a11y-contrast :where(.card, .panel) { border-width: 2px !important; }
+  .a11y-underline a:not(.no-underline) { text-decoration: underline; text-underline-offset: 3px; }
+}
+
+@layer components {
+  /* ---- Sistema de señalética: insignias de ruta -------------- */
+  .badge-ruta {
+    @apply inline-flex items-center justify-center font-mono font-semibold tracking-tight
+           rounded-md px-2 py-1 text-xs leading-none text-white shadow-signage;
+    min-width: 2.75rem;
+  }
+  .badge-ruta[data-fam="C"] { background: var(--cat-1); }
+  .badge-ruta[data-fam="E"] { background: var(--cat-3); }
+  .badge-ruta[data-fam="B"] { background: var(--cat-2); }
+
+  .card {
+    @apply rounded-2xl border transition-[transform,box-shadow] duration-300;
+    background: var(--surface-raised);
+    border-color: var(--line);
+  }
+  .card-hover { @apply hover:-translate-y-1 hover:shadow-lift; }
+
+  .panel {
+    @apply rounded-2xl border p-5;
+    background: var(--surface-raised);
+    border-color: var(--line);
+  }
+
+  .btn {
+    @apply inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
+           transition-transform duration-200 active:scale-[.97];
+  }
+  .btn-primary { background: var(--brand); @apply text-white hover:brightness-110; }
+  .btn-ghost   { @apply border; border-color: var(--line); color: var(--text); }
+  .btn-accent  { background: var(--accent); @apply text-[#1a1000] hover:brightness-110; }
+
+  .link-underline {
+    @apply relative no-underline;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 2px; background-repeat: no-repeat;
+    background-position: 0 100%;
+    transition: background-size .35s cubic-bezier(.22,1,.36,1);
+  }
+  .link-underline:hover, .link-underline:focus-visible { background-size: 100% 2px; }
+
+  .eyebrow {
+    @apply font-mono text-[11px] uppercase tracking-[.22em];
+    color: var(--text-mute);
+  }
+
+  .rule-diagonal {
+    background-image: repeating-linear-gradient(135deg, var(--accent) 0 6px, transparent 6px 14px);
+    height: 6px;
+  }
+
+  .skip-link {
+    @apply absolute z-[100] start-4 -top-24 rounded-lg px-4 py-3 text-sm font-semibold
+           focus:top-4 transition-[top] duration-200;
+    background: var(--accent); color: #1a1000;
+  }
+
+  .prose-setp :where(p) { @apply leading-relaxed; color: var(--text-soft); }
+  .prose-setp :where(h2) { @apply font-display text-2xl mt-8 mb-3; }
+  .prose-setp :where(h3) { @apply font-display text-lg mt-6 mb-2; }
+  .prose-setp :where(ul) { @apply list-disc ps-6 space-y-1; color: var(--text-soft); }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .text-pretty  { text-wrap: pretty; }
+  .grain-overlay::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image: theme('backgroundImage.grain');
+    opacity: .05; mix-blend-mode: overlay;
+  }
+  /* Los iconos de flecha deben espejarse en RTL */
+  [dir="rtl"] .flip-rtl { transform: scaleX(-1); }
+  .reveal { opacity: 0; }
+  .reveal.is-in { opacity: 1; }
+}

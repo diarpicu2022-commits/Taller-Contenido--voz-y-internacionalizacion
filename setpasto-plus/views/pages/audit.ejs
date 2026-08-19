@@ -1,0 +1,129 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+
+<% const sevLabel = { alta: t('audit.sevHigh'), media: t('audit.sevMed'), baja: t('audit.sevLow') };
+   const sevColor = { alta: 'var(--cat-4)', media: 'var(--cat-2)', baja: 'var(--cat-6)' };
+   const totals = t('audit.groups').reduce(function (acc, g) {
+     g.items.forEach(function (it) { acc[it.severity] = (acc[it.severity] || 0) + 1; acc.total++; });
+     return acc;
+   }, { total: 0 }); %>
+
+<main id="main">
+  <section class="relative overflow-hidden border-b" style="border-color: var(--line)">
+    <%- include('../partials/topo') %>
+    <div class="relative mx-auto max-w-[1400px] px-4 py-14 sm:px-6 lg:py-20">
+      <p class="eyebrow flex items-center gap-3"><span class="inline-block h-px w-8" style="background: var(--accent)"></span>181.49.177.91</p>
+      <h1 class="mt-4 max-w-3xl font-display text-[clamp(2.2rem,5.5vw,3.6rem)] font-extrabold leading-[1] tracking-[-0.03em] text-balance"><%= t('audit.title') %></h1>
+      <p class="mt-5 max-w-3xl text-lg leading-relaxed text-pretty" style="color: var(--text-soft)"><%= t('audit.lead') %></p>
+
+      <ul class="mt-8 flex flex-wrap gap-3">
+        <% [['alta', totals.alta], ['media', totals.media], ['baja', totals.baja]].forEach(function (pair) { %>
+          <li class="flex items-center gap-2 rounded-full border px-4 py-2 text-sm" style="border-color: var(--line)">
+            <span class="h-2.5 w-2.5 rounded-sm" style="background: <%= sevColor[pair[0]] %>"></span>
+            <span class="font-semibold"><%= fmt.number.format(pair[1] || 0) %></span>
+            <span style="color: var(--text-mute)"><%= sevLabel[pair[0]] %></span>
+          </li>
+        <% }); %>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Antes y después -->
+  <section class="mx-auto max-w-[1400px] px-4 py-12 sm:px-6 lg:py-16">
+    <div class="grid grid-cols-12 gap-6 lg:gap-10">
+      <header class="col-span-12 lg:col-span-4">
+        <h2 class="font-display text-3xl font-extrabold tracking-tight text-balance"><%= t('audit.scoreTitle') %></h2>
+        <p class="mt-4 text-base leading-relaxed" style="color: var(--text-soft)"><%= t('audit.scoreLead') %></p>
+
+        <ul class="mt-6 space-y-4">
+          <% t('audit.scoreDims').forEach(function (dim, i) { %>
+            <li>
+              <div class="flex items-baseline justify-between gap-3 text-sm">
+                <span class="font-medium"><%= dim %></span>
+                <span class="font-mono" dir="ltr">
+                  <span style="color: var(--text-mute)"><%= scores.before[i] %></span>
+                  <span style="color: var(--text-mute)"> → </span>
+                  <span class="font-semibold" style="color: var(--brand)"><%= scores.after[i] %></span>
+                </span>
+              </div>
+              <div class="mt-2 h-2 overflow-hidden rounded-full" style="background: var(--surface-sunk)">
+                <div class="h-full rounded-full" style="width: <%= scores.before[i] %>%; background: var(--text-mute)"></div>
+              </div>
+              <div class="mt-1 h-2 overflow-hidden rounded-full" style="background: var(--surface-sunk)">
+                <div class="h-full rounded-full transition-[width] duration-1000" data-bar-to="<%= scores.after[i] %>" style="width: 0%; background: var(--brand)"></div>
+              </div>
+            </li>
+          <% }); %>
+        </ul>
+      </header>
+
+      <figure class="card col-span-12 p-6 lg:col-span-8 lg:p-8" data-reveal>
+        <figcaption class="mb-4 flex flex-wrap items-center gap-4">
+          <span class="flex items-center gap-2 text-sm"><span class="h-2.5 w-2.5 rounded-sm" style="background: var(--cat-4)"></span><%= t('audit.scoreBefore') %></span>
+          <span class="flex items-center gap-2 text-sm"><span class="h-2.5 w-2.5 rounded-sm" style="background: var(--cat-1)"></span><%= t('audit.scoreAfter') %></span>
+        </figcaption>
+        <div class="relative h-[360px]"><canvas id="chartAudit" role="img" aria-label="<%= t('audit.scoreTitle') %>"></canvas></div>
+      </figure>
+    </div>
+  </section>
+
+  <!-- Hallazgos -->
+  <% t('audit.groups').forEach(function (group, gi) { %>
+    <section class="mx-auto max-w-[1400px] px-4 pb-12 sm:px-6">
+      <div class="flex items-baseline gap-4">
+        <span class="font-mono text-sm" style="color: var(--text-mute)"><%= String(gi + 1).padStart(2, '0') %></span>
+        <h2 class="font-display text-2xl font-extrabold tracking-tight lg:text-3xl"><%= group.title %></h2>
+        <span class="rule-diagonal hidden flex-1 sm:block"></span>
+      </div>
+
+      <div class="mt-6 overflow-x-auto rounded-2xl border" style="border-color: var(--line)">
+        <table class="w-full min-w-[860px] border-collapse text-sm">
+          <caption class="sr-only"><%= t('audit.title') %> — <%= group.title %></caption>
+          <thead>
+            <tr style="background: var(--surface-sunk)">
+              <th scope="col" class="w-[22%] p-4 text-start font-semibold"><%= t('audit.colFinding') %></th>
+              <th scope="col" class="w-[32%] p-4 text-start font-semibold"><%= t('audit.colEvidence') %></th>
+              <th scope="col" class="w-[34%] p-4 text-start font-semibold"><%= t('audit.colFix') %></th>
+              <th scope="col" class="w-[12%] p-4 text-start font-semibold"><%= t('audit.colSeverity') %></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% group.items.forEach(function (item) { %>
+              <tr class="border-t align-top" style="border-color: var(--line)">
+                <th scope="row" class="p-4 text-start font-semibold"><%= item.finding %></th>
+                <td class="p-4 leading-relaxed" style="color: var(--text-mute)"><%= item.evidence %></td>
+                <td class="p-4 leading-relaxed" style="color: var(--text-soft)"><%= item.fix %></td>
+                <td class="p-4">
+                  <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
+                        style="background: color-mix(in oklab, <%= sevColor[item.severity] %> 15%, transparent); color: <%= sevColor[item.severity] %>">
+                    <span class="h-1.5 w-1.5 rounded-full" style="background: currentColor"></span>
+                    <%= sevLabel[item.severity] %>
+                  </span>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  <% }); %>
+
+  <section class="mx-auto max-w-[1400px] px-4 pb-24 sm:px-6">
+    <p class="rounded-2xl border p-6 text-sm leading-relaxed" style="border-color: var(--line); color: var(--text-mute)">
+      <%= t('footer.disclaimer') %>
+    </p>
+  </section>
+</main>
+
+<script id="audit-data" type="application/json">
+  <%- JSON.stringify({
+        locale: ctx.tag,
+        dims: t('audit.scoreDims'),
+        before: scores.before,
+        after: scores.after,
+        beforeLabel: t('audit.scoreBefore'),
+        afterLabel: t('audit.scoreAfter')
+      }) %>
+</script>
+
+<%- include('../partials/footer', { pageScript: 'audit.js', pageChart: true }) %>

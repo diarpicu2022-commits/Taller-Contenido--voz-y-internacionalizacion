@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="<%= ctx.tag %>" dir="<%= dir %>" class="scroll-pt-24">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title><%= title %></title>
+  <meta name="description" content="<%= description %>">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#0A6B58">
+
+  <%# --- Alternativas de idioma: sin esto, un buscador jamás sabría que la
+        misma página existe en cuatro idiomas. Es la pieza que faltaba por
+        completo en el portal original. --- %>
+  <% alternates.forEach(function (alt) { %>
+  <link rel="alternate" hreflang="<%= alt.tag %>" href="<%= alt.href %>">
+  <% }); %>
+  <link rel="alternate" hreflang="x-default" href="/es<%= canonicalPath %>">
+  <link rel="canonical" href="/<%= lang %><%= canonicalPath %>">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+
+  <script>
+    // Tema y preferencias de lectura antes del primer pintado, para que la
+    // página no parpadee en claro cuando el usuario eligió oscuro.
+    (function () {
+      try {
+        var d = document.documentElement;
+        var s = localStorage.getItem('setp:theme');
+        if (s === 'dark' || (!s && matchMedia('(prefers-color-scheme: dark)').matches)) d.classList.add('dark');
+        var f = localStorage.getItem('setp:font');
+        if (f) d.style.fontSize = f;
+        if (localStorage.getItem('setp:contrast') === '1') d.classList.add('a11y-contrast');
+        if (localStorage.getItem('setp:underline') === '1') d.classList.add('a11y-underline');
+        if (localStorage.getItem('setp:motion') === '1') d.classList.add('a11y-motion');
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body class="min-h-dvh antialiased selection:bg-paramo-600 selection:text-white">
+  <a class="skip-link" href="#main"><%= t('common.skipToContent') %></a>

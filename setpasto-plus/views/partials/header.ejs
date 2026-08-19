@@ -1,0 +1,121 @@
+<% const navItems = [
+     { key: 'rutas',         path: '/rutas',         label: t('nav.rutas') },
+     { key: 'indicadores',   path: '/indicadores',   label: t('nav.indicadores') },
+     { key: 'pqrs',          path: '/pqrs',          label: t('nav.pqrs') },
+     { key: 'accesibilidad', path: '/accesibilidad', label: t('nav.accesibilidad') },
+     { key: 'auditoria',     path: '/auditoria',     label: t('nav.auditoria') }
+   ]; %>
+
+<!-- Franja de estado del servicio: lo que un usuario de transporte necesita
+     saber antes que cualquier otra cosa. Sustituye al contador de visitas. -->
+<div class="border-b text-[13px]" style="border-color: var(--line); background: var(--surface-sunk)">
+  <div class="mx-auto flex max-w-[1400px] items-center gap-4 px-4 py-1.5 sm:px-6">
+    <span class="flex shrink-0 items-center gap-2 font-mono text-[11px] uppercase tracking-[.16em]" style="color: var(--text-mute)">
+      <span class="relative flex h-2 w-2">
+        <span class="absolute inline-flex h-2 w-2 rounded-full bg-carnaval-500 animate-pulse-dot"></span>
+        <span class="relative inline-flex h-2 w-2 rounded-full bg-carnaval-500"></span>
+      </span>
+      <%= t('status.live') %>
+    </span>
+    <div class="relative flex-1 overflow-hidden" role="status" aria-label="<%= t('status.label') %>">
+      <div class="flex w-max gap-8 motion-safe:animate-ticker" data-ticker>
+        <% for (let pass = 0; pass < 2; pass++) { %>
+          <% t('status.items').forEach(function (it) { %>
+            <span class="flex items-center gap-2 whitespace-nowrap" <%= pass === 1 ? 'aria-hidden="true"' : '' %>>
+              <span class="badge-ruta !px-1.5 !py-0.5 !text-[10px]" data-fam="<%= it.ruta[0] %>"><%= it.ruta %></span>
+              <span style="color: var(--text-soft)"><%= it.text %></span>
+            </span>
+          <% }); %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<header class="sticky top-0 z-50 border-b backdrop-blur-xl"
+        style="border-color: var(--line); background: color-mix(in oklab, var(--surface) 86%, transparent)">
+  <div class="mx-auto flex max-w-[1400px] items-center gap-3 px-4 py-3 sm:px-6">
+
+    <a href="<%= href('/') %>" class="group flex items-center gap-3 no-underline" aria-label="<%= t('brand.name') %> — <%= t('nav.home') %>">
+      <span class="relative grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl shadow-signage"
+            style="background: var(--brand)">
+        <span class="absolute inset-0 bg-stripe-signage opacity-70"></span>
+        <svg viewBox="0 0 24 24" class="relative h-6 w-6" fill="none" aria-hidden="true">
+          <path d="M4 16.5V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v9.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M4 11h16" stroke="#fff" stroke-width="1.8"/>
+          <circle cx="8" cy="18" r="1.6" fill="#fff"/><circle cx="16" cy="18" r="1.6" fill="#fff"/>
+        </svg>
+      </span>
+      <span class="flex flex-col leading-none">
+        <span class="font-display text-[1.35rem] font-extrabold tracking-tight"><%= t('brand.name') %></span>
+        <span class="mt-1 font-mono text-[10px] uppercase tracking-[.2em]" style="color: var(--text-mute)"><%= t('brand.tagline') %></span>
+      </span>
+    </a>
+
+    <nav class="ms-auto hidden items-center gap-1 lg:flex" aria-label="<%= t('nav.primary') %>">
+      <% navItems.forEach(function (item) { %>
+        <a href="<%= href(item.path) %>"
+           class="rounded-lg px-3 py-2 text-sm font-medium no-underline transition-colors <%= nav === item.key ? 'font-semibold' : '' %>"
+           style="<%= nav === item.key ? 'background: var(--surface-sunk); color: var(--text)' : 'color: var(--text-soft)' %>"
+           <%= nav === item.key ? 'aria-current="page"' : '' %>><%= item.label %></a>
+      <% }); %>
+    </nav>
+
+    <div class="ms-auto flex items-center gap-2 lg:ms-3">
+      <!-- Selector de idioma: enlaces reales a la misma página en cada idioma,
+           no un widget que recarga con JavaScript. -->
+      <details class="relative" data-lang-switcher>
+        <summary class="btn btn-ghost cursor-pointer list-none" aria-haspopup="listbox">
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18" stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+          <span class="font-mono text-xs font-semibold"><%= ctx.dict.shortName %></span>
+          <span class="sr-only"><%= t('common.changeLanguage') %></span>
+        </summary>
+        <ul class="absolute end-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border p-1 shadow-lift"
+            style="background: var(--surface-raised); border-color: var(--line)" role="listbox"
+            aria-label="<%= t('common.language') %>">
+          <% ctx.locales.forEach(function (l) { %>
+            <li>
+              <a href="/<%= l.prefix %><%= canonicalPath %>" hreflang="<%= l.tag %>" lang="<%= l.tag %>" dir="<%= l.dir %>"
+                 class="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm no-underline"
+                 style="<%= l.prefix === lang ? 'background: var(--surface-sunk); font-weight:600' : 'color: var(--text-soft)' %>"
+                 <%= l.prefix === lang ? 'aria-current="true"' : '' %>>
+                <span><%= l.nativeName %></span>
+                <span class="font-mono text-[10px] uppercase tracking-widest" style="color: var(--text-mute)"><%= l.tag %></span>
+              </a>
+            </li>
+          <% }); %>
+        </ul>
+      </details>
+
+      <button type="button" class="btn btn-ghost" data-theme-toggle
+              aria-label="<%= t('common.theme') %>">
+        <svg viewBox="0 0 24 24" class="h-4 w-4 dark:hidden" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <svg viewBox="0 0 24 24" class="hidden h-4 w-4 dark:block" fill="none" aria-hidden="true">
+          <path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <button type="button" class="btn btn-ghost lg:hidden" data-menu-toggle aria-expanded="false" aria-controls="mobile-nav">
+        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span class="sr-only"><%= t('common.menu') %></span>
+      </button>
+    </div>
+  </div>
+
+  <nav id="mobile-nav" class="hidden border-t px-4 pb-4 pt-2 lg:hidden" style="border-color: var(--line)" aria-label="<%= t('nav.primary') %>">
+    <ul class="grid gap-1">
+      <% navItems.forEach(function (item) { %>
+        <li><a href="<%= href(item.path) %>" class="block rounded-lg px-3 py-2.5 text-sm no-underline"
+               style="<%= nav === item.key ? 'background: var(--surface-sunk); font-weight:600' : 'color: var(--text-soft)' %>"><%= item.label %></a></li>
+      <% }); %>
+    </ul>
+  </nav>
+</header>

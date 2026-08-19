@@ -1,0 +1,186 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+
+<main id="main">
+  <section class="relative overflow-hidden border-b" style="border-color: var(--line)">
+    <%- include('../partials/topo') %>
+    <div class="relative mx-auto max-w-[1400px] px-4 py-14 sm:px-6 lg:py-20">
+      <p class="eyebrow flex items-center gap-3"><span class="inline-block h-px w-8" style="background: var(--accent)"></span><%= t('nav.indicadores') %></p>
+      <h1 class="mt-4 max-w-3xl font-display text-[clamp(2.2rem,5.5vw,3.6rem)] font-extrabold leading-[1] tracking-[-0.03em] text-balance"><%= t('indicators.title') %></h1>
+      <p class="mt-5 max-w-2xl text-lg leading-relaxed text-pretty" style="color: var(--text-soft)"><%= t('indicators.lead') %></p>
+      <p class="mt-4 text-sm" style="color: var(--text-mute)"><%= t('common.updatedOn', { date: fmt.dateLong.format(now) }) %></p>
+    </div>
+  </section>
+
+  <!-- ------------------------------- KPIs ------------------------------- -->
+  <section class="mx-auto max-w-[1400px] px-4 py-10 sm:px-6">
+    <dl class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <% const kpiLabel = { onTime: t('indicators.kpiOnTime'), wait: t('indicators.kpiWait'), satisfaction: t('indicators.kpiSatisfaction'), response: t('indicators.kpiResponse') }; %>
+      <% metrics.kpis.forEach(function (k, i) { %>
+        <div class="card relative overflow-hidden p-6" data-reveal>
+          <span class="absolute inset-y-0 start-0 w-1" style="background: var(--cat-<%= i + 1 %>)"></span>
+          <dt class="text-sm font-medium" style="color: var(--text-soft)"><%= kpiLabel[k.key] %></dt>
+          <dd class="mt-3 flex items-baseline gap-2">
+            <span class="font-display text-4xl font-extrabold tracking-tight" dir="ltr">
+              <%= k.format === 'percent' ? fmt.percent.format(k.value) : fmt.number.format(k.value) %><%
+                 %><% if (k.format === 'minutes') { %><span class="ms-1 text-lg font-semibold" style="color: var(--text-mute)">min</span><% } %>
+            </span>
+          </dd>
+          <%
+            const improving = k.goodWhenDown ? k.delta < 0 : k.delta > 0;
+            const shown = k.format === 'percent' ? fmt.percent.format(Math.abs(k.delta)) : fmt.number.format(Math.abs(k.delta));
+            const deltaText = k.delta >= 0 ? t('indicators.deltaUp', { v: shown }) : t('indicators.deltaDown', { v: shown });
+          %>
+          <p class="mt-3 flex flex-wrap items-center gap-2 text-xs">
+            <span class="inline-flex items-center gap-1 rounded-full px-2 py-1 font-semibold"
+                  style="background: color-mix(in oklab, <%= improving ? 'var(--cat-1)' : 'var(--cat-4)' %> 15%, transparent); color: <%= improving ? 'var(--cat-1)' : 'var(--cat-4)' %>">
+              <svg viewBox="0 0 24 24" class="h-3.5 w-3.5 <%= k.delta >= 0 ? '' : 'rotate-180' %>" fill="none" aria-hidden="true"><path d="M12 19V5m0 0-6 6m6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <%= deltaText %>
+            </span>
+            <span style="color: var(--text-mute)"><%= t('indicators.' + k.hint) %></span>
+          </p>
+        </div>
+      <% }); %>
+    </dl>
+  </section>
+
+  <!-- ------------------------------ Gráficos ------------------------------ -->
+  <section class="mx-auto grid max-w-[1400px] grid-cols-12 gap-6 px-4 pb-20 sm:px-6">
+
+    <!-- 1 · Demanda mensual -->
+    <figure class="card col-span-12 p-6 lg:col-span-7 lg:p-8" data-reveal>
+      <figcaption class="mb-6">
+        <h2 class="font-display text-2xl font-extrabold tracking-tight"><%= t('indicators.demandTitle') %></h2>
+        <p class="mt-1 text-sm" style="color: var(--text-soft)"><%= t('indicators.demandSub') %></p>
+      </figcaption>
+      <div class="relative h-[320px]"><canvas id="chartDemand" role="img" aria-label="<%= t('indicators.demandTitle') %>"></canvas></div>
+      <p class="mt-4 text-xs" style="color: var(--text-mute)"><%= t('indicators.demandNote') %></p>
+      <details class="mt-4">
+        <summary class="cursor-pointer text-sm font-semibold" style="color: var(--brand)"><%= t('common.tableView') %></summary>
+        <div class="mt-3 overflow-x-auto">
+          <table class="w-full min-w-[540px] border-collapse text-sm">
+            <caption class="sr-only"><%= t('indicators.tableCaption', { title: t('indicators.demandTitle') }) %></caption>
+            <thead><tr style="background: var(--surface-sunk)">
+              <th scope="col" class="p-2 text-start"><%= t('indicators.colMonth') %></th>
+              <th scope="col" class="p-2 text-end"><%= t('indicators.demandPrev') %></th>
+              <th scope="col" class="p-2 text-end"><%= t('indicators.demandCurr') %></th>
+            </tr></thead>
+            <tbody>
+              <% t('indicators.months').forEach(function (m, i) { %>
+                <tr class="border-t" style="border-color: var(--line)">
+                  <th scope="row" class="p-2 text-start font-medium"><%= m %></th>
+                  <td class="p-2 text-end font-mono"><%= fmt.number.format(metrics.demand.previous[i]) %></td>
+                  <td class="p-2 text-end font-mono"><%= fmt.number.format(metrics.demand.current[i]) %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </figure>
+
+    <!-- 2 · Reparto modal -->
+    <figure class="card col-span-12 p-6 lg:col-span-5 lg:p-8" data-reveal>
+      <figcaption class="mb-6">
+        <h2 class="font-display text-2xl font-extrabold tracking-tight"><%= t('indicators.modalTitle') %></h2>
+        <p class="mt-1 text-sm" style="color: var(--text-soft)"><%= t('indicators.modalSub') %></p>
+      </figcaption>
+      <div class="grid gap-6 sm:grid-cols-2 sm:items-center">
+        <div class="relative h-[240px]"><canvas id="chartModal" role="img" aria-label="<%= t('indicators.modalTitle') %>"></canvas></div>
+        <ul class="space-y-2 text-sm">
+          <% t('indicators.modalLabels').forEach(function (label, i) { %>
+            <li class="flex items-center justify-between gap-3">
+              <span class="flex items-center gap-2">
+                <span class="h-2.5 w-2.5 shrink-0 rounded-sm" style="background: var(--cat-<%= i + 1 %>)"></span>
+                <span style="color: var(--text-soft)"><%= label %></span>
+              </span>
+              <span class="font-mono font-semibold" dir="ltr"><%= fmt.percent.format(metrics.modalSplit[i] / 100) %></span>
+            </li>
+          <% }); %>
+        </ul>
+      </div>
+      <p class="mt-5 text-xs" style="color: var(--text-mute)"><%= t('indicators.modalNote') %></p>
+    </figure>
+
+    <!-- 3 · Cumplimiento -->
+    <figure class="card col-span-12 p-6 lg:col-span-5 lg:p-8" data-reveal>
+      <figcaption class="mb-6">
+        <h2 class="font-display text-2xl font-extrabold tracking-tight"><%= t('indicators.punctualityTitle') %></h2>
+        <p class="mt-1 text-sm" style="color: var(--text-soft)"><%= t('indicators.punctualitySub') %></p>
+      </figcaption>
+      <div class="relative h-[300px]"><canvas id="chartPunctuality" role="img" aria-label="<%= t('indicators.punctualityTitle') %>"></canvas></div>
+      <p class="mt-4 text-xs" style="color: var(--text-mute)"><%= t('indicators.punctualityNote') %></p>
+      <details class="mt-4">
+        <summary class="cursor-pointer text-sm font-semibold" style="color: var(--brand)"><%= t('common.tableView') %></summary>
+        <div class="mt-3 overflow-x-auto">
+          <table class="w-full border-collapse text-sm">
+            <caption class="sr-only"><%= t('indicators.tableCaption', { title: t('indicators.punctualityTitle') }) %></caption>
+            <thead><tr style="background: var(--surface-sunk)">
+              <th scope="col" class="p-2 text-start"><%= t('indicators.colFamily') %></th>
+              <% metrics.punctuality.quarters.forEach(function (q) { %><th scope="col" class="p-2 text-end font-mono" dir="ltr"><%= q %></th><% }); %>
+            </tr></thead>
+            <tbody>
+              <% metrics.punctuality.series.forEach(function (s) { %>
+                <tr class="border-t" style="border-color: var(--line)">
+                  <th scope="row" class="p-2 text-start font-medium"><%= s.key %></th>
+                  <% s.values.forEach(function (v) { %><td class="p-2 text-end font-mono"><%= fmt.number.format(v) %>%</td><% }); %>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </figure>
+
+    <!-- 4 · PQRSD -->
+    <figure class="card col-span-12 p-6 lg:col-span-7 lg:p-8" data-reveal>
+      <figcaption class="mb-6">
+        <h2 class="font-display text-2xl font-extrabold tracking-tight"><%= t('indicators.pqrsTitle') %></h2>
+        <p class="mt-1 text-sm" style="color: var(--text-soft)"><%= t('indicators.pqrsSub') %></p>
+      </figcaption>
+      <div class="relative h-[320px]"><canvas id="chartPqrs" role="img" aria-label="<%= t('indicators.pqrsTitle') %>"></canvas></div>
+      <p class="mt-4 text-xs" style="color: var(--text-mute)"><%= t('indicators.pqrsNote') %></p>
+      <details class="mt-4">
+        <summary class="cursor-pointer text-sm font-semibold" style="color: var(--brand)"><%= t('common.tableView') %></summary>
+        <div class="mt-3 overflow-x-auto">
+          <table class="w-full border-collapse text-sm">
+            <caption class="sr-only"><%= t('indicators.tableCaption', { title: t('indicators.pqrsTitle') }) %></caption>
+            <thead><tr style="background: var(--surface-sunk)">
+              <th scope="col" class="p-2 text-start"><%= t('indicators.colCategory') %></th>
+              <th scope="col" class="p-2 text-end"><%= t('indicators.colCases') %></th>
+            </tr></thead>
+            <tbody>
+              <% t('indicators.pqrsLabels').forEach(function (label, i) { %>
+                <tr class="border-t" style="border-color: var(--line)">
+                  <th scope="row" class="p-2 text-start font-medium"><%= label %></th>
+                  <td class="p-2 text-end font-mono"><%= fmt.number.format(metrics.pqrs[i]) %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </figure>
+  </section>
+</main>
+
+<script id="chart-data" type="application/json">
+  <%- JSON.stringify({
+        locale: ctx.tag,
+        dir: dir,
+        months: t('indicators.months'),
+        demand: metrics.demand,
+        demandPrev: t('indicators.demandPrev'),
+        demandCurr: t('indicators.demandCurr'),
+        demandAxis: t('indicators.demandAxis'),
+        punctuality: metrics.punctuality,
+        punctualityAxis: t('indicators.punctualityAxis'),
+        modalLabels: t('indicators.modalLabels'),
+        modal: metrics.modalSplit,
+        pqrsLabels: t('indicators.pqrsLabels'),
+        pqrs: metrics.pqrs,
+        pqrsAxis: t('indicators.pqrsAxis')
+      }) %>
+</script>
+
+<%- include('../partials/footer', { pageScript: 'indicators.js', pageChart: true }) %>
