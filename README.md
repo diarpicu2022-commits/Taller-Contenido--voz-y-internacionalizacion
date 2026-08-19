@@ -51,19 +51,19 @@ vercel --prod   # producción
 **Si ves un 404, mira primero el log del build.**
 
 Si el log dice `Build Completed in /vercel/output [39ms]` y **nunca aparece
-`Installing dependencies`**, Vercel no encontró el proyecto: está mirando la
-raíz del repositorio, donde no hay `package.json` ni `vercel.json` porque todo
-vive dentro de `setpasto-plus/`. No compiló nada y desplegó una salida vacía.
+`Installing dependencies`**, Vercel no encontró el proyecto: no compiló nada y
+desplegó una salida vacía. Pasa cuando `package.json` y `vercel.json` no están
+en la carpeta que Vercel está mirando.
 
-La solución es una sola opción en el dashboard:
+El log correcto empieza con `Installing dependencies…`, sigue con el
+`Rebuilding…` de Tailwind y tarda decenas de segundos, no milisegundos.
 
-> **Settings → Build and Deployment → Root Directory → `setpasto-plus`** → *Save*
-> y luego *Deployments → ⋯ → Redeploy*.
+Este proyecto vive en la **raíz del repositorio**, así que *Settings → Build and
+Deployment → Root Directory* debe estar **vacío**. Si alguna vez apuntó a una
+subcarpeta, bórralo, guarda y vuelve a desplegar desde *Deployments → ⋯ →
+Redeploy*.
 
-El log correcto empieza con `Installing dependencies…`, sigue con `Rebuilding…`
-de Tailwind y tarda decenas de segundos, no milisegundos.
-
-Si el Root Directory ya está bien y el 404 continúa, revisa:
+Si aun así falla, revisa:
 
 1. **Framework Preset** en `Other`. Si quedó en Next.js o similar, ignora la
    configuración de este proyecto.
@@ -94,7 +94,7 @@ a `public/vendor/`, para que el portal funcione en una red restringida.
 ## Estructura
 
 ```
-setpasto-plus/
+.
 ├─ server.js                 rutas, negociación de idioma, validación del formulario
 ├─ api/index.js              entrada serverless (Vercel): reexporta la app
 ├─ vercel.json               build, estáticos y reescrituras del despliegue

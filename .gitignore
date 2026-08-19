@@ -1,4 +1,6 @@
 node_modules/
-*.log
-.DS_Store
+public/css/app.css
+public/vendor/
 .vercel/
+.DS_Store
+*.log
