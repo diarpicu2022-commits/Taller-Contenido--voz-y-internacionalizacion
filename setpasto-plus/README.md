@@ -48,16 +48,28 @@ vercel          # vista previa
 vercel --prod   # producción
 ```
 
-**Si sigues viendo un 404**, revisa en este orden:
+**Si ves un 404, mira primero el log del build.**
 
-1. **Root Directory.** Si subiste el repositorio con la carpeta padre incluida,
-   en *Settings → General → Root Directory* debe decir `setpasto-plus`. Este es
-   el fallo más común: Vercel busca `vercel.json` en la raíz del proyecto.
-2. **Framework Preset** en `Other`. Si quedó en Next.js o similar, ignora la
+Si el log dice `Build Completed in /vercel/output [39ms]` y **nunca aparece
+`Installing dependencies`**, Vercel no encontró el proyecto: está mirando la
+raíz del repositorio, donde no hay `package.json` ni `vercel.json` porque todo
+vive dentro de `setpasto-plus/`. No compiló nada y desplegó una salida vacía.
+
+La solución es una sola opción en el dashboard:
+
+> **Settings → Build and Deployment → Root Directory → `setpasto-plus`** → *Save*
+> y luego *Deployments → ⋯ → Redeploy*.
+
+El log correcto empieza con `Installing dependencies…`, sigue con `Rebuilding…`
+de Tailwind y tarda decenas de segundos, no milisegundos.
+
+Si el Root Directory ya está bien y el 404 continúa, revisa:
+
+1. **Framework Preset** en `Other`. Si quedó en Next.js o similar, ignora la
    configuración de este proyecto.
-3. **Build Command** y **Output Directory** vacíos en el dashboard, para que
+2. **Build Command** y **Output Directory** vacíos en el dashboard, para que
    manden los valores de `vercel.json`.
-4. Que `api/index.js` y `vercel.json` estén realmente en el commit desplegado.
+3. Que `api/index.js` y `vercel.json` estén realmente en el commit desplegado.
 
 `public/css/app.css` y `public/vendor/` están en `.gitignore` a propósito: los
 genera `npm run build` durante el despliegue.
