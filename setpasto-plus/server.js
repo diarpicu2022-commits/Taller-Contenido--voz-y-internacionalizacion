@@ -233,8 +233,20 @@ app.use((req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`\n  SETPasto+  ·  http://localhost:${PORT}\n`);
-  console.log('  Idiomas:', i18n.LOCALES.map((l) => `/${l.prefix} (${l.tag})`).join('  '));
-  console.log('');
-});
+/* ---------------------------------------------------------------------------
+ * Arranque
+ * ---------------------------------------------------------------------------
+ * En local se levanta un servidor que escucha en un puerto. En un entorno
+ * serverless (Vercel, Netlify, Cloud Functions) no hay puerto: la plataforma
+ * importa este módulo y usa `app` como manejador de cada petición. Por eso el
+ * `listen` solo corre cuando el archivo se ejecuta directamente.
+ * ------------------------------------------------------------------------- */
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`\n  SETPasto+  ·  http://localhost:${PORT}\n`);
+    console.log('  Idiomas:', i18n.LOCALES.map((l) => `/${l.prefix} (${l.tag})`).join('  '));
+    console.log('');
+  });
+}
+
+module.exports = app;

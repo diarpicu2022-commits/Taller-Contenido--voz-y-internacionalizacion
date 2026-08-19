@@ -31,6 +31,39 @@ La raíz `/` negocia el idioma con la cabecera `Accept-Language` y redirige a
 
 ---
 
+## Despliegue en Vercel
+
+Vercel no mantiene un proceso escuchando en un puerto: importa el módulo y usa
+la app de Express como manejador de cada petición. Tres piezas lo resuelven:
+
+- `server.js` exporta `app` y solo llama a `listen()` cuando se ejecuta
+  directamente (`require.main === module`).
+- `api/index.js` reexporta esa app como función serverless.
+- `vercel.json` compila el CSS en el build, sirve `public/` como estático y
+  reescribe el resto de las rutas hacia la función.
+
+```bash
+npm i -g vercel
+vercel          # vista previa
+vercel --prod   # producción
+```
+
+**Si sigues viendo un 404**, revisa en este orden:
+
+1. **Root Directory.** Si subiste el repositorio con la carpeta padre incluida,
+   en *Settings → General → Root Directory* debe decir `setpasto-plus`. Este es
+   el fallo más común: Vercel busca `vercel.json` en la raíz del proyecto.
+2. **Framework Preset** en `Other`. Si quedó en Next.js o similar, ignora la
+   configuración de este proyecto.
+3. **Build Command** y **Output Directory** vacíos en el dashboard, para que
+   manden los valores de `vercel.json`.
+4. Que `api/index.js` y `vercel.json` estén realmente en el commit desplegado.
+
+`public/css/app.css` y `public/vendor/` están en `.gitignore` a propósito: los
+genera `npm run build` durante el despliegue.
+
+---
+
 ## Stack
 
 | Pieza | Elección | Por qué |
@@ -51,6 +84,8 @@ a `public/vendor/`, para que el portal funcione en una red restringida.
 ```
 setpasto-plus/
 ├─ server.js                 rutas, negociación de idioma, validación del formulario
+├─ api/index.js              entrada serverless (Vercel): reexporta la app
+├─ vercel.json               build, estáticos y reescrituras del despliegue
 ├─ src/
 │  ├─ i18n/
 │  │  ├─ index.js            registro de locales, negociación, formateadores Intl

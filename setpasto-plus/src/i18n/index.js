@@ -1,7 +1,5 @@
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
 
 /* ---------------------------------------------------------------------------
  * Registro de locales
@@ -13,22 +11,26 @@ const path = require('path');
  * error del sitio original, que declaraba `es-ES` para un público colombiano.
  * ------------------------------------------------------------------------- */
 const LOCALES = [
-  { prefix: 'es', tag: 'es-CO', intl: 'es-CO',        file: 'es-CO.json' },
-  { prefix: 'en', tag: 'en-US', intl: 'en-US',        file: 'en-US.json' },
-  { prefix: 'pt', tag: 'pt-BR', intl: 'pt-BR',        file: 'pt-BR.json' },
+  { prefix: 'es', tag: 'es-CO', intl: 'es-CO' },
+  { prefix: 'en', tag: 'en-US', intl: 'en-US' },
+  { prefix: 'pt', tag: 'pt-BR', intl: 'pt-BR' },
   // El subtag de extensión -u-nu-arab pide a Intl los dígitos indoarábigos orientales
   // (٠١٢٣). Va solo en el tag de formato: <html lang> conserva `ar`, porque
   // el sistema de numeración no es parte de la identidad lingüística.
-  { prefix: 'ar', tag: 'ar',    intl: 'ar-u-nu-arab', file: 'ar.json'    },
+  { prefix: 'ar', tag: 'ar',    intl: 'ar-u-nu-arab' },
 ];
 
 const DEFAULT_PREFIX = 'es';
 
-const dictionaries = new Map();
-for (const loc of LOCALES) {
-  const raw = fs.readFileSync(path.join(__dirname, loc.file), 'utf8');
-  dictionaries.set(loc.prefix, Object.freeze(JSON.parse(raw)));
-}
+/* Los diccionarios se cargan con `require` y no con `fs.readFileSync`: así son
+   dependencias estáticas del módulo, y cualquier empaquetador —incluido el
+   rastreador de Vercel— los incluye en el bundle sin configuración extra. */
+const dictionaries = new Map([
+  ['es', Object.freeze(require('./es-CO.json'))],
+  ['en', Object.freeze(require('./en-US.json'))],
+  ['pt', Object.freeze(require('./pt-BR.json'))],
+  ['ar', Object.freeze(require('./ar.json'))],
+]);
 
 const byPrefix = new Map(LOCALES.map((l) => [l.prefix, l]));
 
